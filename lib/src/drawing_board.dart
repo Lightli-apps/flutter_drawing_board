@@ -185,7 +185,13 @@ class DrawingBoard extends StatefulWidget {
                 : null,
           ),
           onTap: () {
-            controller.setPaintContent(StraightLine());
+            if (currType == Rectangle) {
+              controller.setPaintContent(Rectangle());
+            } else if (currType == Circle) {
+              controller.setPaintContent(Circle());
+            } else {
+              controller.setPaintContent(StraightLine());
+            }
             showAdditionalToolbar();
           }),
 
