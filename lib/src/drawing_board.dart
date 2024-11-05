@@ -426,7 +426,7 @@ class _DrawingBoardState extends State<DrawingBoard> {
     });
   }
 
-  /// ------- color toolbar on slide
+  /// ------- color toolbar on drag
 
   void colorToolbarOnDrag(int currentIndex, bool increase) {
     setState(() {
@@ -796,7 +796,7 @@ class _DrawingBoardState extends State<DrawingBoard> {
 class ColorsToolbar extends StatefulWidget {
   const ColorsToolbar({
     super.key,
-    this.selectedColor = Colors.transparent,
+    required this.selectedColor,
     required this.colorToolbarOnClick,
     required this.colorToolbarOnDrag,
     this.selectedIndex = 0,
@@ -838,7 +838,8 @@ class _ColorsToolbarState extends State<ColorsToolbar> {
                       }
                     },
                     onClick: () => widget.colorToolbarOnClick(index),
-                    isOn: widget.selectedColor == colors.elementAt(index),
+                    isOn: (widget.selectedColor == colors.elementAt(index)) ||
+                        (widget.selectedColor == Colors.transparent && widget.selectedIndex == index),
                     borderLeft: index == 0,
                     borderRight: index == colors.length - 1,
                   ))),
