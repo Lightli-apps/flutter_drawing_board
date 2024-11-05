@@ -140,12 +140,13 @@ class DrawingBoard extends StatefulWidget {
     Type currType,
     DrawingController controller,
     Color activeColor,
-    Function() showAdditionalToolbar,
+    Function({bool isColor}) showAdditionalToolbar,
     Color selectedColor,
     int selectedIndex,
     double initialPosition,
   ) {
     return <DefToolItem>[
+      /// ------- open colors toolbar
       DefToolItem(
           icon: Container(
             width: 18,
@@ -159,9 +160,11 @@ class DrawingBoard extends StatefulWidget {
             ),
           ),
           onTap: () {
-            showAdditionalToolbar();
+            showAdditionalToolbar(isColor: true);
           },
           isActive: true),
+
+      /// ------- open shapes toolbar
       DefToolItem(
           isActive: currType == Rectangle || currType == Circle || currType == StraightLine,
           icon: SvgPicture.asset(
@@ -175,6 +178,8 @@ class DrawingBoard extends StatefulWidget {
             controller.setPaintContent(StraightLine());
             showAdditionalToolbar();
           }),
+
+      /// ------ pencil
       DefToolItem(
           isActive: currType == SimpleLine,
           icon: SvgPicture.asset(
@@ -186,6 +191,8 @@ class DrawingBoard extends StatefulWidget {
             controller.setPaintContent(SimpleLine());
             showAdditionalToolbar();
           }),
+
+      /// -------- pen
       DefToolItem(
           isActive: currType == SmoothLine,
           icon: SvgPicture.asset(
@@ -197,6 +204,8 @@ class DrawingBoard extends StatefulWidget {
             controller.setPaintContent(SmoothLine());
             showAdditionalToolbar();
           }),
+
+      /// ----------- eraser
       DefToolItem(
         isActive: currType == Eraser,
         icon: SvgPicture.asset(
@@ -211,6 +220,8 @@ class DrawingBoard extends StatefulWidget {
           showAdditionalToolbar();
         },
       ),
+
+      /// ----------- undo
       DefToolItem(
           icon: InkWell(
             onTap: controller.undo,
@@ -227,6 +238,8 @@ class DrawingBoard extends StatefulWidget {
             ),
           ),
           isActive: false),
+
+      /// --------- redo
       DefToolItem(
         isActive: false,
         icon: InkWell(
@@ -244,6 +257,8 @@ class DrawingBoard extends StatefulWidget {
           ),
         ),
       ),
+
+      /// --------- clear
       DefToolItem(
         isActive: false,
         icon: InkWell(
@@ -268,6 +283,7 @@ class DrawingBoard extends StatefulWidget {
   static List<DefToolItem> customToolsShapes(Type currType, DrawingController controller, Color activeColor,
       Function() showAdditionalToolbar, Function(int)? colorToolbarOnClick) {
     return <DefToolItem>[
+      /// ---------- straight line
       DefToolItem(
           isActive: currType == StraightLine,
           icon: SvgPicture.asset(
@@ -279,6 +295,8 @@ class DrawingBoard extends StatefulWidget {
             controller.setPaintContent(StraightLine());
             showAdditionalToolbar();
           }),
+
+      /// ----------- rectangle
       DefToolItem(
           isActive: currType == Rectangle,
           icon: SvgPicture.asset(
@@ -290,6 +308,8 @@ class DrawingBoard extends StatefulWidget {
             controller.setPaintContent(Rectangle());
             showAdditionalToolbar();
           }),
+
+      /// -------- circle
       DefToolItem(
           isActive: currType == Circle,
           icon: SvgPicture.asset(
@@ -306,7 +326,7 @@ class DrawingBoard extends StatefulWidget {
 
   static Widget buildCustomTools(DrawingController controller,
       {required Color activeColor,
-      required Function() showAdditionalToolbar,
+      required Function({bool isColor}) showAdditionalToolbar,
       required Function(int) colorToolbarOnClick,
       required Function(int, bool) colorToolbarOnDrag,
       Axis axis = Axis.horizontal,
@@ -358,25 +378,34 @@ class _DrawingBoardState extends State<DrawingBoard> {
   List<Color> colors = Constants().selectableColors;
 
   Type? activeTool;
+  bool isColorOn = false;
 
   /// FUNCTIONS:
   /// ----------- show additional toolbar
-  void showAdditionalToolbar() {
+  void showAdditionalToolbar({bool isColor = false}) {
     setState(() {
-      if (activeTool == _controller.drawConfig.value.contentType) {
-        activeTool = null;
+      if (isColor) {
+        isColorOn = !isColorOn;
+        showColors = isColorOn;
         showSize = false;
         showShapes = false;
-        showColors = false;
       } else {
-        activeTool = _controller.drawConfig.value.contentType;
-        if (toolsWithSize.contains(_controller.drawConfig.value.contentType)) {
-          showSize = true;
-        }
-        if (toolsWithShape.contains(_controller.drawConfig.value.contentType)) {
-          showShapes = true;
-        } else {
+        showColors = false;
+        isColorOn = false;
+        if (activeTool == _controller.drawConfig.value.contentType) {
+          activeTool = null;
+          showSize = false;
           showShapes = false;
+        } else {
+          activeTool = _controller.drawConfig.value.contentType;
+          if (toolsWithSize.contains(_controller.drawConfig.value.contentType)) {
+            showSize = true;
+          }
+          if (toolsWithShape.contains(_controller.drawConfig.value.contentType)) {
+            showShapes = true;
+          } else {
+            showShapes = false;
+          }
         }
       }
     });
@@ -613,7 +642,7 @@ class _DrawingBoardState extends State<DrawingBoard> {
   /// Custom toolbar
   static Widget buildCustomTools(DrawingController controller,
       {required Color activeColor,
-      required Function() showAdditionalToolbar,
+      required Function({bool isColor}) showAdditionalToolbar,
       required Function(int) colorToolbarOnClick,
       required Function(int, bool) colorToolbarOnDrag,
       Axis axis = Axis.horizontal,
@@ -651,7 +680,7 @@ class _DrawingBoardState extends State<DrawingBoard> {
                   color: activeColor == Colors.white ? const Color(0xFFF6F6F6) : const Color(0xFF474747),
                   child: Column(
                     children: <Widget>[
-                      if (!showColors)
+                      if (showColors)
                         ColorsToolbar(
                           selectedColor: selectedColor,
                           selectedIndex: selectedIndex,
