@@ -144,6 +144,7 @@ class DrawingBoard extends StatefulWidget {
     Color selectedColor,
     int selectedIndex,
     double initialPosition,
+    bool isColorOn,
   ) {
     return <DefToolItem>[
       /// ------- open colors toolbar
@@ -153,7 +154,12 @@ class DrawingBoard extends StatefulWidget {
             height: 18,
             decoration: BoxDecoration(
               color: selectedColor,
-              border: Border.all(color: activeColor),
+              border: Border.all(
+                  color: isColorOn
+                      ? activeColor
+                      : activeColor == Colors.white
+                          ? const Color(0xff3a3a3a)
+                          : Colors.white),
               borderRadius: const BorderRadius.all(
                 Radius.circular(2),
               ),
@@ -162,15 +168,15 @@ class DrawingBoard extends StatefulWidget {
           onTap: () {
             showAdditionalToolbar(isColor: true);
           },
-          isActive: true),
+          isActive: isColorOn),
 
       /// ------- open shapes toolbar
       DefToolItem(
-          isActive: currType == Rectangle || currType == Circle || currType == StraightLine,
+          isActive: (currType == Rectangle || currType == Circle || currType == StraightLine) && !isColorOn,
           icon: SvgPicture.asset(
             'assets/icons/shapes.svg',
             fit: BoxFit.scaleDown,
-            colorFilter: currType == Rectangle || currType == Circle || currType == StraightLine
+            colorFilter: (currType == Rectangle || currType == Circle || currType == StraightLine) && !isColorOn
                 ? ColorFilter.mode(activeColor, BlendMode.srcIn)
                 : null,
           ),
@@ -181,11 +187,11 @@ class DrawingBoard extends StatefulWidget {
 
       /// ------ pencil
       DefToolItem(
-          isActive: currType == SimpleLine,
+          isActive: currType == SimpleLine && !isColorOn,
           icon: SvgPicture.asset(
             'assets/icons/pencil.svg',
             fit: BoxFit.scaleDown,
-            colorFilter: currType == SimpleLine ? ColorFilter.mode(activeColor, BlendMode.srcIn) : null,
+            colorFilter: currType == SimpleLine && !isColorOn ? ColorFilter.mode(activeColor, BlendMode.srcIn) : null,
           ),
           onTap: () {
             controller.setPaintContent(SimpleLine());
@@ -194,11 +200,11 @@ class DrawingBoard extends StatefulWidget {
 
       /// -------- pen
       DefToolItem(
-          isActive: currType == SmoothLine,
+          isActive: currType == SmoothLine && !isColorOn,
           icon: SvgPicture.asset(
             'assets/icons/pen.svg',
             fit: BoxFit.scaleDown,
-            colorFilter: currType == SmoothLine ? ColorFilter.mode(activeColor, BlendMode.srcIn) : null,
+            colorFilter: currType == SmoothLine && !isColorOn ? ColorFilter.mode(activeColor, BlendMode.srcIn) : null,
           ),
           onTap: () {
             controller.setPaintContent(SmoothLine());
@@ -207,11 +213,11 @@ class DrawingBoard extends StatefulWidget {
 
       /// ----------- eraser
       DefToolItem(
-        isActive: currType == Eraser,
+        isActive: currType == Eraser && !isColorOn,
         icon: SvgPicture.asset(
           'assets/icons/eraser.svg',
           fit: BoxFit.scaleDown,
-          colorFilter: currType == Eraser ? ColorFilter.mode(activeColor, BlendMode.srcIn) : null,
+          colorFilter: currType == Eraser && !isColorOn ? ColorFilter.mode(activeColor, BlendMode.srcIn) : null,
         ),
         onTap: () {
           controller.setPaintContent(
@@ -334,7 +340,8 @@ class DrawingBoard extends StatefulWidget {
       bool showSize = false,
       bool showColors = false,
       int selectedIndex = 0,
-      double initialPosition = 30.0}) {
+      double initialPosition = 30.0,
+      bool isColorOn = false}) {
     return _DrawingBoardState.buildCustomTools(controller,
         axis: axis,
         activeColor: activeColor,
@@ -345,7 +352,8 @@ class DrawingBoard extends StatefulWidget {
         colorToolbarOnClick: colorToolbarOnClick,
         colorToolbarOnDrag: colorToolbarOnDrag,
         selectedIndex: selectedIndex,
-        initialPosition: initialPosition);
+        initialPosition: initialPosition,
+        isColorOn: isColorOn);
   }
 
   @override
@@ -491,7 +499,8 @@ class _DrawingBoardState extends State<DrawingBoard> {
               colorToolbarOnClick: colorToolbarOnClick,
               colorToolbarOnDrag: colorToolbarOnDrag,
               selectedIndex: selectedIndex,
-              initialPosition: initialPosition),
+              initialPosition: initialPosition,
+              isColorOn: isColorOn),
         ],
       );
     }
@@ -651,7 +660,8 @@ class _DrawingBoardState extends State<DrawingBoard> {
       bool showColors = false,
       Color selectedColor = Colors.transparent,
       int selectedIndex = 0,
-      double initialPosition = 30.0}) {
+      double initialPosition = 30.0,
+      bool isColorOn = false}) {
     return Material(
       color: Colors.white,
       child: ExValueBuilder<DrawConfig>(
@@ -660,15 +670,10 @@ class _DrawingBoardState extends State<DrawingBoard> {
         builder: (_, DrawConfig dc, ___) {
           final Type currType = dc.contentType;
 
-          final List<Widget> children = DrawingBoard.customTools(
-            currType,
-            controller,
-            activeColor,
-            showAdditionalToolbar,
-            selectedColor,
-            selectedIndex,
-            initialPosition,
-          ).map((DefToolItem item) => _DefToolItemWidget(item: item)).toList();
+          final List<Widget> children = DrawingBoard.customTools(currType, controller, activeColor,
+                  showAdditionalToolbar, selectedColor, selectedIndex, initialPosition, isColorOn)
+              .map((DefToolItem item) => _DefToolItemWidget(item: item))
+              .toList();
 
           final List<Widget> childrenShapes = DrawingBoard.customToolsShapes(
                   currType, controller, activeColor, showAdditionalToolbar, colorToolbarOnClick)
