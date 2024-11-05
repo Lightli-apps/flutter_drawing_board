@@ -2,8 +2,10 @@ import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'drawing_controller.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
+import '../constants/constants.dart';
+import 'drawing_controller.dart';
 import 'helper/ex_value_builder.dart';
 import 'helper/get_size.dart';
 import 'paint_contents/circle.dart';
@@ -13,6 +15,7 @@ import 'paint_contents/simple_line.dart';
 import 'paint_contents/smooth_line.dart';
 import 'paint_contents/straight_line.dart';
 import 'painter.dart';
+import 'widgets/selectable_color.dart';
 
 /// 默认工具栏构建器
 typedef DefaultToolsBuilder = List<DefToolItem> Function(
@@ -93,32 +96,31 @@ class DrawingBoard extends StatefulWidget {
   final AlignmentGeometry alignment;
 
   /// 默认工具项列表
-  static List<DefToolItem> defaultTools(
-      Type currType, DrawingController controller) {
+  static List<DefToolItem> defaultTools(Type currType, DrawingController controller) {
     return <DefToolItem>[
       DefToolItem(
           isActive: currType == SimpleLine,
-          icon: Icons.edit,
+          icon: const Icon(Icons.edit),
           onTap: () => controller.setPaintContent(SimpleLine())),
       DefToolItem(
           isActive: currType == SmoothLine,
-          icon: Icons.brush,
+          icon: const Icon(Icons.brush),
           onTap: () => controller.setPaintContent(SmoothLine())),
       DefToolItem(
           isActive: currType == StraightLine,
-          icon: Icons.show_chart,
+          icon: const Icon(Icons.show_chart),
           onTap: () => controller.setPaintContent(StraightLine())),
       DefToolItem(
           isActive: currType == Rectangle,
-          icon: CupertinoIcons.stop,
+          icon: const Icon(CupertinoIcons.stop),
           onTap: () => controller.setPaintContent(Rectangle())),
       DefToolItem(
           isActive: currType == Circle,
-          icon: CupertinoIcons.circle,
+          icon: const Icon(CupertinoIcons.circle),
           onTap: () => controller.setPaintContent(Circle())),
       DefToolItem(
           isActive: currType == Eraser,
-          icon: CupertinoIcons.bandage,
+          icon: const Icon(CupertinoIcons.bandage),
           onTap: () => controller.setPaintContent(Eraser())),
     ];
   }
@@ -129,8 +131,201 @@ class DrawingBoard extends StatefulWidget {
 
   static Widget buildDefaultTools(DrawingController controller,
       {DefaultToolsBuilder? defaultToolsBuilder, Axis axis = Axis.horizontal}) {
-    return _DrawingBoardState.buildDefaultTools(controller,
-        defaultToolsBuilder: defaultToolsBuilder, axis: axis);
+    return _DrawingBoardState.buildDefaultTools(controller, defaultToolsBuilder: defaultToolsBuilder, axis: axis);
+  }
+
+  /// ------- custom tools and actions build:
+  /// ------ tools:
+  static List<DefToolItem> customTools(
+    Type currType,
+    DrawingController controller,
+    Color activeColor,
+    Function() showAdditionalToolbar,
+    Color selectedColor,
+    int selectedIndex,
+    double initialPosition,
+  ) {
+    return <DefToolItem>[
+      DefToolItem(
+          icon: Container(
+            width: 18,
+            height: 18,
+            decoration: BoxDecoration(
+              color: selectedColor,
+              border: Border.all(color: activeColor),
+              borderRadius: const BorderRadius.all(
+                Radius.circular(2),
+              ),
+            ),
+          ),
+          onTap: () {
+            showAdditionalToolbar();
+          },
+          isActive: true),
+      DefToolItem(
+          isActive: currType == Rectangle || currType == Circle || currType == StraightLine,
+          icon: SvgPicture.asset(
+            'assets/icons/shapes.svg',
+            fit: BoxFit.scaleDown,
+            colorFilter: currType == Rectangle || currType == Circle || currType == StraightLine
+                ? ColorFilter.mode(activeColor, BlendMode.srcIn)
+                : null,
+          ),
+          onTap: () {
+            controller.setPaintContent(StraightLine());
+            showAdditionalToolbar();
+          }),
+      DefToolItem(
+          isActive: currType == SimpleLine,
+          icon: SvgPicture.asset(
+            'assets/icons/pencil.svg',
+            fit: BoxFit.scaleDown,
+            colorFilter: currType == SimpleLine ? ColorFilter.mode(activeColor, BlendMode.srcIn) : null,
+          ),
+          onTap: () {
+            controller.setPaintContent(SimpleLine());
+            showAdditionalToolbar();
+          }),
+      DefToolItem(
+          isActive: currType == SmoothLine,
+          icon: SvgPicture.asset(
+            'assets/icons/pen.svg',
+            fit: BoxFit.scaleDown,
+            colorFilter: currType == SmoothLine ? ColorFilter.mode(activeColor, BlendMode.srcIn) : null,
+          ),
+          onTap: () {
+            controller.setPaintContent(SmoothLine());
+            showAdditionalToolbar();
+          }),
+      DefToolItem(
+        isActive: currType == Eraser,
+        icon: SvgPicture.asset(
+          'assets/icons/eraser.svg',
+          fit: BoxFit.scaleDown,
+          colorFilter: currType == Eraser ? ColorFilter.mode(activeColor, BlendMode.srcIn) : null,
+        ),
+        onTap: () {
+          controller.setPaintContent(
+            Eraser(),
+          );
+          showAdditionalToolbar();
+        },
+      ),
+      DefToolItem(
+          icon: InkWell(
+            onTap: controller.undo,
+            customBorder: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: SizedBox(
+              width: 30,
+              height: 30,
+              child: SvgPicture.asset(
+                'assets/icons/left_arrow.svg',
+                fit: BoxFit.scaleDown,
+              ),
+            ),
+          ),
+          isActive: false),
+      DefToolItem(
+        isActive: false,
+        icon: InkWell(
+          onTap: controller.redo,
+          customBorder: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: SizedBox(
+            width: 30,
+            height: 30,
+            child: SvgPicture.asset(
+              'assets/icons/right_arrow.svg',
+              fit: BoxFit.scaleDown,
+            ),
+          ),
+        ),
+      ),
+      DefToolItem(
+        isActive: false,
+        icon: InkWell(
+          onTap: controller.clear,
+          customBorder: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: SizedBox(
+            width: 30,
+            height: 30,
+            child: SvgPicture.asset(
+              'assets/icons/trash.svg',
+              fit: BoxFit.scaleDown,
+            ),
+          ),
+        ),
+      ),
+    ];
+  }
+
+  /// ------ shapes
+  static List<DefToolItem> customToolsShapes(Type currType, DrawingController controller, Color activeColor,
+      Function() showAdditionalToolbar, Function(int)? colorToolbarOnClick) {
+    return <DefToolItem>[
+      DefToolItem(
+          isActive: currType == StraightLine,
+          icon: SvgPicture.asset(
+            'assets/icons/minus.svg',
+            fit: BoxFit.scaleDown,
+            colorFilter: currType == StraightLine ? ColorFilter.mode(activeColor, BlendMode.srcIn) : null,
+          ),
+          onTap: () {
+            controller.setPaintContent(StraightLine());
+            showAdditionalToolbar();
+          }),
+      DefToolItem(
+          isActive: currType == Rectangle,
+          icon: SvgPicture.asset(
+            'assets/icons/rectangle.svg',
+            fit: BoxFit.scaleDown,
+            colorFilter: currType == Rectangle ? ColorFilter.mode(activeColor, BlendMode.srcIn) : null,
+          ),
+          onTap: () {
+            controller.setPaintContent(Rectangle());
+            showAdditionalToolbar();
+          }),
+      DefToolItem(
+          isActive: currType == Circle,
+          icon: SvgPicture.asset(
+            'assets/icons/circle.svg',
+            fit: BoxFit.scaleDown,
+            colorFilter: currType == Circle ? ColorFilter.mode(activeColor, BlendMode.srcIn) : null,
+          ),
+          onTap: () {
+            controller.setPaintContent(Circle());
+            showAdditionalToolbar();
+          }),
+    ];
+  }
+
+  static Widget buildCustomTools(DrawingController controller,
+      {required Color activeColor,
+      required Function() showAdditionalToolbar,
+      required Function(int) colorToolbarOnClick,
+      required Function(int, bool) colorToolbarOnDrag,
+      Axis axis = Axis.horizontal,
+      bool showShapes = false,
+      bool showSize = false,
+      bool showColors = false,
+      int selectedIndex = 0,
+      double initialPosition = 30.0}) {
+    return _DrawingBoardState.buildCustomTools(controller,
+        axis: axis,
+        activeColor: activeColor,
+        showShapes: showShapes,
+        showSize: showSize,
+        showColors: showColors,
+        showAdditionalToolbar: showAdditionalToolbar,
+        colorToolbarOnClick: colorToolbarOnClick,
+        colorToolbarOnDrag: colorToolbarOnDrag,
+        selectedIndex: selectedIndex,
+        initialPosition: initialPosition);
   }
 
   @override
@@ -138,8 +333,7 @@ class DrawingBoard extends StatefulWidget {
 }
 
 class _DrawingBoardState extends State<DrawingBoard> {
-  late final DrawingController _controller =
-      widget.controller ?? DrawingController();
+  late final DrawingController _controller = widget.controller ?? DrawingController();
 
   @override
   void dispose() {
@@ -149,13 +343,90 @@ class _DrawingBoardState extends State<DrawingBoard> {
     super.dispose();
   }
 
+  bool showShapes = false;
+  bool showSize = false;
+  bool showColors = false;
+
+  List<Type> toolsWithSize = <Type>[SimpleLine, SmoothLine, StraightLine, Rectangle, Circle, Eraser];
+  List<Type> toolsWithShape = <Type>[StraightLine, Rectangle, Circle];
+
+  Color selectedColor = Colors.transparent;
+
+  double initialPosition = 30.0;
+  int selectedIndex = 0;
+
+  List<Color> colors = Constants().selectableColors;
+
+  Type? activeTool;
+
+  /// FUNCTIONS:
+  /// ----------- show additional toolbar
+  void showAdditionalToolbar() {
+    setState(() {
+      if (activeTool == _controller.drawConfig.value.contentType) {
+        activeTool = null;
+        showSize = false;
+        showShapes = false;
+        showColors = false;
+      } else {
+        activeTool = _controller.drawConfig.value.contentType;
+        if (toolsWithSize.contains(_controller.drawConfig.value.contentType)) {
+          showSize = true;
+        }
+        if (toolsWithShape.contains(_controller.drawConfig.value.contentType)) {
+          showShapes = true;
+        } else {
+          showShapes = false;
+        }
+      }
+    });
+  }
+
+  /// ------ color toolbar on click
+  void colorToolbarOnClick(int index) {
+    setState(() {
+      selectedIndex = index;
+      initialPosition = 30.0 + selectedIndex * 14.0;
+      if (selectedIndex == 0) {
+        selectedColor =
+            Theme.of(context).brightness == Brightness.light ? colors.elementAt(selectedIndex) : Colors.white;
+      } else {
+        selectedColor = colors.elementAt(selectedIndex);
+      }
+      _controller.setStyle(color: selectedColor);
+    });
+  }
+
+  /// ------- color toolbar on slide
+
+  void colorToolbarOnDrag(int currentIndex, bool increase) {
+    setState(() {
+      if (increase) {
+        if (currentIndex < colors.length - 1) {
+          selectedIndex = currentIndex + 1;
+        }
+      } else {
+        if (currentIndex > 0) {
+          selectedIndex = currentIndex - 1;
+        }
+      }
+      initialPosition = 30.0 + selectedIndex * 14.0;
+      if (selectedIndex == 0) {
+        selectedColor =
+            Theme.of(context).brightness == Brightness.light ? colors.elementAt(selectedIndex) : Colors.white;
+      } else {
+        selectedColor = colors.elementAt(selectedIndex);
+      }
+      _controller.setStyle(color: selectedColor);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     Widget content = InteractiveViewer(
       maxScale: widget.maxScale,
       minScale: widget.minScale,
-      boundaryMargin: widget.boardBoundaryMargin ??
-          EdgeInsets.all(MediaQuery.of(context).size.width),
+      boundaryMargin: widget.boardBoundaryMargin ?? EdgeInsets.all(MediaQuery.of(context).size.width),
       clipBehavior: widget.boardClipBehavior,
       panAxis: widget.panAxis,
       constrained: widget.boardConstrained,
@@ -174,20 +445,32 @@ class _DrawingBoardState extends State<DrawingBoard> {
         children: <Widget>[
           Expanded(child: content),
           if (widget.showDefaultActions) buildDefaultActions(_controller),
-          if (widget.showDefaultTools)
-            buildDefaultTools(_controller,
-                defaultToolsBuilder: widget.defaultToolsBuilder),
+          if (widget.showDefaultTools) buildDefaultTools(_controller, defaultToolsBuilder: widget.defaultToolsBuilder),
+        ],
+      );
+    } else {
+      content = Column(
+        children: <Widget>[
+          Expanded(child: content),
+          buildCustomTools(_controller,
+              activeColor: Theme.of(context).brightness == Brightness.light ? Colors.white : const Color(0xFF3a3a3a),
+              showShapes: showShapes,
+              showSize: showSize,
+              showColors: showColors,
+              showAdditionalToolbar: showAdditionalToolbar,
+              selectedColor: selectedColor,
+              colorToolbarOnClick: colorToolbarOnClick,
+              colorToolbarOnDrag: colorToolbarOnDrag,
+              selectedIndex: selectedIndex,
+              initialPosition: initialPosition),
         ],
       );
     }
 
     return Listener(
-      onPointerDown: (PointerDownEvent pde) =>
-          _controller.addFingerCount(pde.localPosition),
-      onPointerUp: (PointerUpEvent pue) =>
-          _controller.reduceFingerCount(pue.localPosition),
-      onPointerCancel: (PointerCancelEvent pce) =>
-          _controller.reduceFingerCount(pce.localPosition),
+      onPointerDown: (PointerDownEvent pde) => _controller.addFingerCount(pde.localPosition),
+      onPointerUp: (PointerUpEvent pue) => _controller.reduceFingerCount(pue.localPosition),
+      onPointerCancel: (PointerCancelEvent pce) => _controller.reduceFingerCount(pce.localPosition),
       child: content,
     );
   }
@@ -198,8 +481,7 @@ class _DrawingBoardState extends State<DrawingBoard> {
       key: _controller.painterKey,
       child: ExValueBuilder<DrawConfig>(
         valueListenable: _controller.drawConfig,
-        shouldRebuild: (DrawConfig p, DrawConfig n) =>
-            p.angle != n.angle || p.size != n.size,
+        shouldRebuild: (DrawConfig p, DrawConfig n) => p.angle != n.angle || p.size != n.size,
         builder: (_, DrawConfig dc, Widget? child) {
           Widget c = child!;
 
@@ -270,8 +552,7 @@ class _DrawingBoardState extends State<DrawingBoard> {
                       value: dc.strokeWidth,
                       max: 50,
                       min: 1,
-                      onChanged: (double v) =>
-                          controller.setStyle(strokeWidth: v),
+                      onChanged: (double v) => controller.setStyle(strokeWidth: v),
                     ),
                   ),
                   IconButton(
@@ -288,9 +569,7 @@ class _DrawingBoardState extends State<DrawingBoard> {
                     ),
                     onPressed: () => controller.redo(),
                   ),
-                  IconButton(
-                      icon: const Icon(CupertinoIcons.rotate_right),
-                      onPressed: () => controller.turn()),
+                  IconButton(icon: const Icon(CupertinoIcons.rotate_right), onPressed: () => controller.turn()),
                   IconButton(
                     icon: const Icon(CupertinoIcons.trash),
                     onPressed: () => controller.clear(),
@@ -315,23 +594,225 @@ class _DrawingBoardState extends State<DrawingBoard> {
         padding: EdgeInsets.zero,
         child: ExValueBuilder<DrawConfig>(
           valueListenable: controller.drawConfig,
-          shouldRebuild: (DrawConfig p, DrawConfig n) =>
-              p.contentType != n.contentType,
+          shouldRebuild: (DrawConfig p, DrawConfig n) => p.contentType != n.contentType,
           builder: (_, DrawConfig dc, ___) {
             final Type currType = dc.contentType;
 
             final List<Widget> children =
-                (defaultToolsBuilder?.call(currType, controller) ??
-                        DrawingBoard.defaultTools(currType, controller))
+                (defaultToolsBuilder?.call(currType, controller) ?? DrawingBoard.defaultTools(currType, controller))
                     .map((DefToolItem item) => _DefToolItemWidget(item: item))
                     .toList();
 
-            return axis == Axis.horizontal
-                ? Row(children: children)
-                : Column(children: children);
+            return axis == Axis.horizontal ? Row(children: children) : Column(children: children);
           },
         ),
       ),
+    );
+  }
+
+  /// Custom toolbar
+  static Widget buildCustomTools(DrawingController controller,
+      {required Color activeColor,
+      required Function() showAdditionalToolbar,
+      required Function(int) colorToolbarOnClick,
+      required Function(int, bool) colorToolbarOnDrag,
+      Axis axis = Axis.horizontal,
+      bool showShapes = false,
+      bool showSize = false,
+      bool showColors = false,
+      Color selectedColor = Colors.transparent,
+      int selectedIndex = 0,
+      double initialPosition = 30.0}) {
+    return Material(
+      color: Colors.white,
+      child: ExValueBuilder<DrawConfig>(
+        valueListenable: controller.drawConfig,
+// shouldRebuild: (DrawConfig p, DrawConfig n) => p.contentType != n.contentType,
+        builder: (_, DrawConfig dc, ___) {
+          final Type currType = dc.contentType;
+
+          final List<Widget> children = DrawingBoard.customTools(
+            currType,
+            controller,
+            activeColor,
+            showAdditionalToolbar,
+            selectedColor,
+            selectedIndex,
+            initialPosition,
+          ).map((DefToolItem item) => _DefToolItemWidget(item: item)).toList();
+
+          final List<Widget> childrenShapes = DrawingBoard.customToolsShapes(
+                  currType, controller, activeColor, showAdditionalToolbar, colorToolbarOnClick)
+              .map((DefToolItem item) => _DefToolItemWidget(item: item))
+              .toList();
+
+          return axis == Axis.horizontal
+              ? ColoredBox(
+                  color: activeColor == Colors.white ? const Color(0xFFF6F6F6) : const Color(0xFF474747),
+                  child: Column(
+                    children: <Widget>[
+                      if (!showColors)
+                        ColorsToolbar(
+                          selectedColor: selectedColor,
+                          selectedIndex: selectedIndex,
+                          initialPosition: initialPosition,
+                          colorToolbarOnClick: (int selectedIndex) => colorToolbarOnClick(selectedIndex),
+                          colorToolbarOnDrag: (int selectedIndex, bool increase) =>
+                              colorToolbarOnDrag(selectedIndex, increase),
+                        ),
+                      if (showShapes)
+                        SizedBox(
+                            height: 45,
+                            width: 150,
+                            child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: childrenShapes)),
+                      if (showSize)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: SizedBox(
+                            height: 50,
+                            child: SliderTheme(
+                              data: const SliderThemeData(
+                                trackHeight: 1,
+                                thumbShape: RoundSliderThumbShape(enabledThumbRadius: 5),
+                                overlayShape: RoundSliderThumbShape(enabledThumbRadius: 5, pressedElevation: 0),
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: <Widget>[
+                                  Text(
+                                    dc.strokeWidth.round().toString(),
+                                  ),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: <Widget>[
+                                      InkWell(
+                                        onTap: () {
+                                          if (controller.drawConfig.value.strokeWidth - 1 > 0) {
+                                            controller.setStyle(
+                                                strokeWidth: controller.drawConfig.value.strokeWidth - 1);
+                                          }
+                                        },
+                                        customBorder: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(20),
+                                        ),
+                                        child: SizedBox(
+                                          width: 30,
+                                          height: 30,
+                                          child: SvgPicture.asset(
+                                            'assets/icons/minus.svg',
+                                            fit: BoxFit.scaleDown,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        width: 14,
+                                      ),
+                                      Expanded(
+                                        child: Slider(
+                                          activeColor:
+                                              activeColor == Colors.white ? const Color(0xFF3a3a3a) : Colors.white,
+                                          value: dc.strokeWidth,
+                                          max: 50,
+                                          min: 1,
+                                          onChanged: (double v) {
+                                            controller.setStyle(strokeWidth: v);
+                                          },
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        width: 14,
+                                      ),
+                                      InkWell(
+                                        onTap: () {
+                                          if (controller.drawConfig.value.strokeWidth + 1 < 50) {
+                                            controller.setStyle(
+                                                strokeWidth: controller.drawConfig.value.strokeWidth + 1);
+                                          }
+                                        },
+                                        customBorder: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(20),
+                                        ),
+                                        child: SizedBox(
+                                          width: 30,
+                                          height: 30,
+                                          child: SvgPicture.asset(
+                                            'assets/icons/plus.svg',
+                                            fit: BoxFit.scaleDown,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        child: SizedBox(
+                            height: 45,
+                            child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: children)),
+                      ),
+                    ],
+                  ),
+                )
+              : Column(children: children);
+        },
+      ),
+    );
+  }
+}
+
+class ColorsToolbar extends StatefulWidget {
+  const ColorsToolbar({
+    super.key,
+    this.selectedColor = Colors.transparent,
+    required this.colorToolbarOnClick,
+    required this.colorToolbarOnDrag,
+    this.selectedIndex = 0,
+    this.initialPosition = 30.0,
+  });
+
+  final Color selectedColor;
+  final Function(int) colorToolbarOnClick;
+  final Function(int, bool) colorToolbarOnDrag;
+  final int selectedIndex;
+  final double initialPosition;
+
+  @override
+  State<ColorsToolbar> createState() => _ColorsToolbarState();
+}
+
+class _ColorsToolbarState extends State<ColorsToolbar> {
+  @override
+  Widget build(BuildContext context) {
+    final List<Color> colors = Constants().selectableColors;
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 7),
+      height: 45,
+      child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List<SelectableColor>.generate(
+              colors.length,
+              (int index) => SelectableColor(
+                    color: colors.elementAt(index),
+                    onDrag: (DragUpdateDetails value) {
+                      if ((widget.initialPosition < value.globalPosition.dx) &&
+                          value.globalPosition.dx > 14 * widget.selectedIndex + 60) {
+                        widget.colorToolbarOnDrag(widget.selectedIndex, true);
+                      } else {
+                        if ((value.globalPosition.dx < widget.initialPosition) &&
+                            (value.globalPosition.dx < 14 * widget.selectedIndex)) {
+                          widget.colorToolbarOnDrag(widget.selectedIndex, false);
+                        }
+                      }
+                    },
+                    onClick: () => widget.colorToolbarOnClick(index),
+                    isOn: widget.selectedColor == colors.elementAt(index),
+                    borderLeft: index == 0,
+                    borderRight: index == colors.length - 1,
+                  ))),
     );
   }
 }
@@ -350,7 +831,7 @@ class DefToolItem {
   final Function()? onTap;
   final bool isActive;
 
-  final IconData icon;
+  final Widget icon;
   final double? iconSize;
   final Color? color;
   final Color activeColor;
@@ -366,12 +847,22 @@ class _DefToolItemWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return IconButton(
-      onPressed: item.onTap,
-      icon: Icon(
-        item.icon,
-        color: item.isActive ? item.activeColor : item.color,
-        size: item.iconSize,
+    return GestureDetector(
+      onTap: item.onTap,
+      child: Container(
+        alignment: Alignment.center,
+        width: 30,
+        height: 30,
+        decoration: BoxDecoration(
+            borderRadius: const BorderRadius.all(
+              Radius.circular(20),
+            ),
+            color: item.isActive
+                ? Theme.of(context).brightness == Brightness.light
+                    ? const Color(0xFF3a3a3a)
+                    : Colors.white
+                : Colors.transparent),
+        child: item.icon,
       ),
     );
   }

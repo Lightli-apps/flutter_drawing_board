@@ -28,14 +28,8 @@ Future<ui.Image> _getImage(String path) async {
 
 const Map<String, dynamic> _testLine1 = <String, dynamic>{
   'type': 'StraightLine',
-  'startPoint': <String, dynamic>{
-    'dx': 68.94337550070736,
-    'dy': 62.05980083656557
-  },
-  'endPoint': <String, dynamic>{
-    'dx': 277.1373386828114,
-    'dy': 277.32029957032194
-  },
+  'startPoint': <String, dynamic>{'dx': 68.94337550070736, 'dy': 62.05980083656557},
+  'endPoint': <String, dynamic>{'dx': 277.1373386828114, 'dy': 277.32029957032194},
   'paint': <String, dynamic>{
     'blendMode': 3,
     'color': 4294198070,
@@ -51,14 +45,8 @@ const Map<String, dynamic> _testLine1 = <String, dynamic>{
 
 const Map<String, dynamic> _testLine2 = <String, dynamic>{
   'type': 'StraightLine',
-  'startPoint': <String, dynamic>{
-    'dx': 106.35164817830423,
-    'dy': 255.9575653134524
-  },
-  'endPoint': <String, dynamic>{
-    'dx': 292.76034659254094,
-    'dy': 92.125586665872
-  },
+  'startPoint': <String, dynamic>{'dx': 106.35164817830423, 'dy': 255.9575653134524},
+  'endPoint': <String, dynamic>{'dx': 292.76034659254094, 'dy': 92.125586665872},
   'paint': <String, dynamic>{
     'blendMode': 3,
     'color': 4294198070,
@@ -108,8 +96,7 @@ class Triangle extends PaintContent {
 
   @override
   void drawing(Offset nowPoint) {
-    A = Offset(
-        startPoint.dx + (nowPoint.dx - startPoint.dx) / 2, startPoint.dy);
+    A = Offset(startPoint.dx + (nowPoint.dx - startPoint.dx) / 2, startPoint.dy);
     B = Offset(startPoint.dx, nowPoint.dy);
     C = nowPoint;
   }
@@ -142,8 +129,7 @@ class Triangle extends PaintContent {
 
 /// Custom drawn image
 /// url: https://web-strapi.mrmilu.com/uploads/flutter_logo_470e9f7491.png
-const String _imageUrl =
-    'https://web-strapi.mrmilu.com/uploads/flutter_logo_470e9f7491.png';
+const String _imageUrl = 'https://web-strapi.mrmilu.com/uploads/flutter_logo_470e9f7491.png';
 
 class ImageContent extends PaintContent {
   ImageContent(this.image, {this.imageUrl = ''});
@@ -235,8 +221,7 @@ class _MyHomePageState extends State<MyHomePage> {
   /// 绘制控制器
   final DrawingController _drawingController = DrawingController();
 
-  final TransformationController _transformationController =
-      TransformationController();
+  final TransformationController _transformationController = TransformationController();
 
   double _colorOpacity = 1;
 
@@ -248,8 +233,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   /// 获取画板数据 `getImageData()`
   Future<void> _getImageData() async {
-    final Uint8List? data =
-        (await _drawingController.getImageData())?.buffer.asUint8List();
+    final Uint8List? data = (await _drawingController.getImageData())?.buffer.asUint8List();
     if (data == null) {
       debugPrint('获取图片数据失败');
       return;
@@ -261,8 +245,7 @@ class _MyHomePageState extends State<MyHomePage> {
         builder: (BuildContext c) {
           return Material(
             color: Colors.transparent,
-            child: InkWell(
-                onTap: () => Navigator.pop(c), child: Image.memory(data)),
+            child: InkWell(onTap: () => Navigator.pop(c), child: Image.memory(data)),
           );
         },
       );
@@ -282,12 +265,10 @@ class _MyHomePageState extends State<MyHomePage> {
             child: InkWell(
               onTap: () => Navigator.pop(c),
               child: Container(
-                constraints:
-                    const BoxConstraints(maxWidth: 500, maxHeight: 800),
+                constraints: const BoxConstraints(maxWidth: 500, maxHeight: 800),
                 padding: const EdgeInsets.all(20.0),
                 child: SelectableText(
-                  const JsonEncoder.withIndent('  ')
-                      .convert(_drawingController.getJsonList()),
+                  const JsonEncoder.withIndent('  ').convert(_drawingController.getJsonList()),
                 ),
               ),
             ),
@@ -300,8 +281,7 @@ class _MyHomePageState extends State<MyHomePage> {
   /// 添加Json测试内容
   void _addTestLine() {
     _drawingController.addContent(StraightLine.fromJson(_testLine1));
-    _drawingController
-        .addContents(<PaintContent>[StraightLine.fromJson(_testLine2)]);
+    _drawingController.addContents(<PaintContent>[StraightLine.fromJson(_testLine2)]);
     _drawingController.addContent(SimpleLine.fromJson(tData[0]));
     _drawingController.addContent(Eraser.fromJson(tData[1]));
   }
@@ -318,21 +298,18 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         leading: PopupMenuButton<Color>(
           icon: const Icon(Icons.color_lens),
-          onSelected: (ui.Color value) => _drawingController.setStyle(
-              color: value.withOpacity(_colorOpacity)),
+          onSelected: (ui.Color value) => _drawingController.setStyle(color: value.withOpacity(_colorOpacity)),
           itemBuilder: (_) {
             return <PopupMenuEntry<ui.Color>>[
               PopupMenuItem<Color>(
                 child: StatefulBuilder(
-                  builder: (BuildContext context,
-                      Function(void Function()) setState) {
+                  builder: (BuildContext context, Function(void Function()) setState) {
                     return Slider(
                       value: _colorOpacity,
                       onChanged: (double v) {
                         setState(() => _colorOpacity = v);
                         _drawingController.setStyle(
-                          color: _drawingController.drawConfig.value.color
-                              .withOpacity(_colorOpacity),
+                          color: _drawingController.drawConfig.value.color.withOpacity(_colorOpacity),
                         );
                       },
                     );
@@ -340,9 +317,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ),
               ...Colors.accents.map((ui.Color color) {
-                return PopupMenuItem<ui.Color>(
-                    value: color,
-                    child: Container(width: 100, height: 50, color: color));
+                return PopupMenuItem<ui.Color>(value: color, child: Container(width: 100, height: 50, color: color));
               }),
             ];
           },
@@ -350,14 +325,10 @@ class _MyHomePageState extends State<MyHomePage> {
         title: const Text('Drawing Test'),
         systemOverlayStyle: SystemUiOverlayStyle.light,
         actions: <Widget>[
-          IconButton(
-              icon: const Icon(Icons.line_axis), onPressed: _addTestLine),
-          IconButton(
-              icon: const Icon(Icons.javascript_outlined), onPressed: _getJson),
+          IconButton(icon: const Icon(Icons.line_axis), onPressed: _addTestLine),
+          IconButton(icon: const Icon(Icons.javascript_outlined), onPressed: _getJson),
           IconButton(icon: const Icon(Icons.check), onPressed: _getImageData),
-          IconButton(
-              icon: const Icon(Icons.restore_page_rounded),
-              onPressed: _restBoard),
+          IconButton(icon: const Icon(Icons.restore_page_rounded), onPressed: _restBoard),
         ],
       ),
       body: Column(
@@ -375,23 +346,22 @@ class _MyHomePageState extends State<MyHomePage> {
                     height: constraints.maxHeight,
                     color: Colors.white,
                   ),
-                  showDefaultActions: true,
-                  showDefaultTools: true,
+                  //showDefaultActions: false,
+                  //showDefaultTools: false,
                   defaultToolsBuilder: (Type t, _) {
                     return DrawingBoard.defaultTools(t, _drawingController)
                       ..insert(
                         1,
                         DefToolItem(
-                          icon: Icons.change_history_rounded,
+                          icon: const Icon(Icons.change_history_rounded),
                           isActive: t == Triangle,
-                          onTap: () =>
-                              _drawingController.setPaintContent(Triangle()),
+                          onTap: () => _drawingController.setPaintContent(Triangle()),
                         ),
                       )
                       ..insert(
                         2,
                         DefToolItem(
-                          icon: Icons.image_rounded,
+                          icon: const Icon(Icons.image_rounded),
                           isActive: t == ImageContent,
                           onTap: () async {
                             showDialog(
