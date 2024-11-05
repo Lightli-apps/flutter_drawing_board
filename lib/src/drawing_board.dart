@@ -153,7 +153,11 @@ class DrawingBoard extends StatefulWidget {
             width: 18,
             height: 18,
             decoration: BoxDecoration(
-              color: selectedColor,
+              color: selectedColor == Colors.transparent
+                  ? activeColor == Colors.white
+                      ? const Color(0xff3a3a3a)
+                      : Colors.white
+                  : selectedColor,
               border: Border.all(
                   color: isColorOn
                       ? activeColor
