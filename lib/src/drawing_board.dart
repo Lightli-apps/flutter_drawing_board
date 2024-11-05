@@ -720,11 +720,15 @@ class _DrawingBoardState extends State<DrawingBoard> {
                                 thumbShape: RoundSliderThumbShape(enabledThumbRadius: 5),
                                 overlayShape: RoundSliderThumbShape(enabledThumbRadius: 5, pressedElevation: 0),
                               ),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
+                              child: Stack(
+                                alignment: Alignment.topCenter,
                                 children: <Widget>[
-                                  Text(
-                                    dc.strokeWidth.round().toString(),
+                                  Positioned(
+                                    top: 7,
+                                    child: Text(
+                                      dc.strokeWidth.round().toString(),
+                                      style: const TextStyle(fontFamily: 'Montserrat-Regular', fontSize: 8),
+                                    ),
                                   ),
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
