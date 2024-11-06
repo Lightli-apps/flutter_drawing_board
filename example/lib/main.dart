@@ -346,8 +346,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     height: constraints.maxHeight,
                     color: Colors.white,
                   ),
-                  //showDefaultActions: false,
-                  //showDefaultTools: false,
+                 showCustomTools: true,
                   defaultToolsBuilder: (Type t, _) {
                     return DrawingBoard.defaultTools(t, _drawingController)
                       ..insert(

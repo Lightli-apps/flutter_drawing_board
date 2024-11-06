@@ -143,6 +143,7 @@ class DrawingBoard extends StatefulWidget {
     Type currType,
     DrawingController controller,
     Color activeColor,
+    Color invertedColor,
     Function({bool isColor}) showAdditionalToolbar,
     Color selectedColor,
     int selectedIndex,
@@ -156,17 +157,8 @@ class DrawingBoard extends StatefulWidget {
             width: 18,
             height: 18,
             decoration: BoxDecoration(
-              color: selectedColor == Colors.transparent
-                  ? activeColor == Colors.white
-                      ? const Color(0xff3a3a3a)
-                      : Colors.white
-                  : selectedColor,
-              border: Border.all(
-                  color: isColorOn
-                      ? activeColor
-                      : activeColor == Colors.white
-                          ? const Color(0xff3a3a3a)
-                          : Colors.white),
+              color: selectedColor == Colors.transparent ? invertedColor : selectedColor,
+              border: Border.all(color: isColorOn ? activeColor : invertedColor),
               borderRadius: const BorderRadius.all(
                 Radius.circular(2),
               ),
@@ -345,6 +337,7 @@ class DrawingBoard extends StatefulWidget {
 
   static Widget buildCustomTools(DrawingController controller,
       {required Color activeColor,
+      required Color invertedColor,
       required Function({bool isColor}) showAdditionalToolbar,
       required Function(int) colorToolbarOnClick,
       required Function(int, bool) colorToolbarOnDrag,
@@ -358,6 +351,7 @@ class DrawingBoard extends StatefulWidget {
     return _DrawingBoardState.buildCustomTools(controller,
         axis: axis,
         activeColor: activeColor,
+        invertedColor: invertedColor,
         showShapes: showShapes,
         showSize: showSize,
         showColors: showColors,
@@ -504,6 +498,7 @@ class _DrawingBoardState extends State<DrawingBoard> {
           Expanded(child: content),
           buildCustomTools(_controller,
               activeColor: Theme.of(context).brightness == Brightness.light ? Colors.white : const Color(0xFF3a3a3a),
+              invertedColor: Theme.of(context).brightness == Brightness.light ? const Color(0xFF3a3a3a) : Colors.white,
               showShapes: showShapes,
               showSize: showSize,
               showColors: showColors,
@@ -664,6 +659,7 @@ class _DrawingBoardState extends State<DrawingBoard> {
   /// Custom toolbar
   static Widget buildCustomTools(DrawingController controller,
       {required Color activeColor,
+      required Color invertedColor,
       required Function({bool isColor}) showAdditionalToolbar,
       required Function(int) colorToolbarOnClick,
       required Function(int, bool) colorToolbarOnDrag,
@@ -675,6 +671,8 @@ class _DrawingBoardState extends State<DrawingBoard> {
       int selectedIndex = 0,
       double initialPosition = 30.0,
       bool isColorOn = false}) {
+    controller.setStyle(color: invertedColor);
+
     return Material(
       color: Colors.white,
       child: ExValueBuilder<DrawConfig>(
@@ -683,7 +681,7 @@ class _DrawingBoardState extends State<DrawingBoard> {
         builder: (_, DrawConfig dc, ___) {
           final Type currType = dc.contentType;
 
-          final List<Widget> children = DrawingBoard.customTools(currType, controller, activeColor,
+          final List<Widget> children = DrawingBoard.customTools(currType, controller, activeColor, invertedColor,
                   showAdditionalToolbar, selectedColor, selectedIndex, initialPosition, isColorOn)
               .map((DefToolItem item) => _DefToolItemWidget(item: item))
               .toList();
