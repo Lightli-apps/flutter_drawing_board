@@ -177,7 +177,7 @@ class DrawingBoard extends StatefulWidget {
             fit: BoxFit.scaleDown,
             colorFilter: (currType == Rectangle || currType == Circle || currType == StraightLine) && !isColorOn
                 ? ColorFilter.mode(activeColor, BlendMode.srcIn)
-                : null,
+                : ColorFilter.mode(invertedColor, BlendMode.srcIn),
           ),
           onTap: () {
             if (currType == Rectangle) {
@@ -196,7 +196,9 @@ class DrawingBoard extends StatefulWidget {
           icon: SvgPicture.asset(
             'assets/icons/pencil.svg',
             fit: BoxFit.scaleDown,
-            colorFilter: currType == SimpleLine && !isColorOn ? ColorFilter.mode(activeColor, BlendMode.srcIn) : null,
+            colorFilter: currType == SimpleLine && !isColorOn
+                ? ColorFilter.mode(activeColor, BlendMode.srcIn)
+                : ColorFilter.mode(invertedColor, BlendMode.srcIn),
           ),
           onTap: () {
             controller.setPaintContent(SimpleLine());
@@ -209,7 +211,9 @@ class DrawingBoard extends StatefulWidget {
           icon: SvgPicture.asset(
             'assets/icons/pen.svg',
             fit: BoxFit.scaleDown,
-            colorFilter: currType == SmoothLine && !isColorOn ? ColorFilter.mode(activeColor, BlendMode.srcIn) : null,
+            colorFilter: currType == SmoothLine && !isColorOn
+                ? ColorFilter.mode(activeColor, BlendMode.srcIn)
+                : ColorFilter.mode(invertedColor, BlendMode.srcIn),
           ),
           onTap: () {
             controller.setPaintContent(SmoothLine());
@@ -222,7 +226,9 @@ class DrawingBoard extends StatefulWidget {
         icon: SvgPicture.asset(
           'assets/icons/eraser.svg',
           fit: BoxFit.scaleDown,
-          colorFilter: currType == Eraser && !isColorOn ? ColorFilter.mode(activeColor, BlendMode.srcIn) : null,
+          colorFilter: currType == Eraser && !isColorOn
+              ? ColorFilter.mode(activeColor, BlendMode.srcIn)
+              : ColorFilter.mode(invertedColor, BlendMode.srcIn),
         ),
         onTap: () {
           controller.setPaintContent(
@@ -245,6 +251,7 @@ class DrawingBoard extends StatefulWidget {
               child: SvgPicture.asset(
                 'assets/icons/left_arrow.svg',
                 fit: BoxFit.scaleDown,
+                colorFilter: ColorFilter.mode(invertedColor, BlendMode.srcIn),
               ),
             ),
           ),
@@ -264,6 +271,7 @@ class DrawingBoard extends StatefulWidget {
             child: SvgPicture.asset(
               'assets/icons/right_arrow.svg',
               fit: BoxFit.scaleDown,
+              colorFilter: ColorFilter.mode(invertedColor, BlendMode.srcIn),
             ),
           ),
         ),
@@ -283,6 +291,7 @@ class DrawingBoard extends StatefulWidget {
             child: SvgPicture.asset(
               'assets/icons/trash.svg',
               fit: BoxFit.scaleDown,
+              colorFilter: ColorFilter.mode(invertedColor, BlendMode.srcIn),
             ),
           ),
         ),
@@ -292,7 +301,7 @@ class DrawingBoard extends StatefulWidget {
 
   /// ------ shapes
   static List<DefToolItem> customToolsShapes(Type currType, DrawingController controller, Color activeColor,
-      Function() showAdditionalToolbar, Function(int)? colorToolbarOnClick) {
+      Color invertedColor, Function() showAdditionalToolbar, Function(int)? colorToolbarOnClick) {
     return <DefToolItem>[
       /// ---------- straight line
       DefToolItem(
@@ -300,7 +309,9 @@ class DrawingBoard extends StatefulWidget {
           icon: SvgPicture.asset(
             'assets/icons/minus.svg',
             fit: BoxFit.scaleDown,
-            colorFilter: currType == StraightLine ? ColorFilter.mode(activeColor, BlendMode.srcIn) : null,
+            colorFilter: currType == StraightLine
+                ? ColorFilter.mode(activeColor, BlendMode.srcIn)
+                : ColorFilter.mode(invertedColor, BlendMode.srcIn),
           ),
           onTap: () {
             controller.setPaintContent(StraightLine());
@@ -313,7 +324,9 @@ class DrawingBoard extends StatefulWidget {
           icon: SvgPicture.asset(
             'assets/icons/rectangle.svg',
             fit: BoxFit.scaleDown,
-            colorFilter: currType == Rectangle ? ColorFilter.mode(activeColor, BlendMode.srcIn) : null,
+            colorFilter: currType == Rectangle
+                ? ColorFilter.mode(activeColor, BlendMode.srcIn)
+                : ColorFilter.mode(invertedColor, BlendMode.srcIn),
           ),
           onTap: () {
             controller.setPaintContent(Rectangle());
@@ -326,7 +339,9 @@ class DrawingBoard extends StatefulWidget {
           icon: SvgPicture.asset(
             'assets/icons/circle.svg',
             fit: BoxFit.scaleDown,
-            colorFilter: currType == Circle ? ColorFilter.mode(activeColor, BlendMode.srcIn) : null,
+            colorFilter: currType == Circle
+                ? ColorFilter.mode(activeColor, BlendMode.srcIn)
+                : ColorFilter.mode(invertedColor, BlendMode.srcIn),
           ),
           onTap: () {
             controller.setPaintContent(Circle());
@@ -671,8 +686,6 @@ class _DrawingBoardState extends State<DrawingBoard> {
       int selectedIndex = 0,
       double initialPosition = 30.0,
       bool isColorOn = false}) {
-    controller.setStyle(color: invertedColor);
-
     return Material(
       color: Colors.white,
       child: ExValueBuilder<DrawConfig>(
@@ -687,7 +700,7 @@ class _DrawingBoardState extends State<DrawingBoard> {
               .toList();
 
           final List<Widget> childrenShapes = DrawingBoard.customToolsShapes(
-                  currType, controller, activeColor, showAdditionalToolbar, colorToolbarOnClick)
+                  currType, controller, activeColor, invertedColor, showAdditionalToolbar, colorToolbarOnClick)
               .map((DefToolItem item) => _DefToolItemWidget(item: item))
               .toList();
 
@@ -747,10 +760,9 @@ class _DrawingBoardState extends State<DrawingBoard> {
                                         child: SizedBox(
                                           width: 30,
                                           height: 30,
-                                          child: SvgPicture.asset(
-                                            'assets/icons/minus.svg',
-                                            fit: BoxFit.scaleDown,
-                                          ),
+                                          child: SvgPicture.asset('assets/icons/minus.svg',
+                                              fit: BoxFit.scaleDown,
+                                              colorFilter: ColorFilter.mode(invertedColor, BlendMode.srcIn)),
                                         ),
                                       ),
                                       const SizedBox(
@@ -758,8 +770,8 @@ class _DrawingBoardState extends State<DrawingBoard> {
                                       ),
                                       Expanded(
                                         child: Slider(
-                                          activeColor:
-                                              activeColor == Colors.white ? const Color(0xFF3a3a3a) : Colors.white,
+                                          activeColor: invertedColor,
+                                          inactiveColor: invertedColor,
                                           value: dc.strokeWidth,
                                           max: 50,
                                           min: 1,
@@ -784,10 +796,9 @@ class _DrawingBoardState extends State<DrawingBoard> {
                                         child: SizedBox(
                                           width: 30,
                                           height: 30,
-                                          child: SvgPicture.asset(
-                                            'assets/icons/plus.svg',
-                                            fit: BoxFit.scaleDown,
-                                          ),
+                                          child: SvgPicture.asset('assets/icons/plus.svg',
+                                              fit: BoxFit.scaleDown,
+                                              colorFilter: ColorFilter.mode(invertedColor, BlendMode.srcIn)),
                                         ),
                                       ),
                                     ],
@@ -845,7 +856,11 @@ class _ColorsToolbarState extends State<ColorsToolbar> {
           children: List<SelectableColor>.generate(
               colors.length,
               (int index) => SelectableColor(
-                    color: colors.elementAt(index),
+                    color: index == 0
+                        ? Theme.of(context).brightness == Brightness.light
+                            ? const Color(0xff3a3a3a)
+                            : Colors.white
+                        : colors.elementAt(index),
                     onDrag: (DragUpdateDetails value) {
                       if ((widget.initialPosition < value.globalPosition.dx) &&
                           value.globalPosition.dx > 14 * widget.selectedIndex + 60) {
@@ -858,7 +873,8 @@ class _ColorsToolbarState extends State<ColorsToolbar> {
                       }
                     },
                     onClick: () => widget.colorToolbarOnClick(index),
-                    isOn: (widget.selectedColor == colors.elementAt(index)) ||
+                    isOn: (widget.selectedColor == colors.elementAt(index) ||
+                            (widget.selectedColor == Colors.white && index == 0)) ||
                         (widget.selectedColor == Colors.transparent && widget.selectedIndex == index),
                     borderLeft: index == 0,
                     borderRight: index == colors.length - 1,
