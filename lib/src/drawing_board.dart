@@ -31,6 +31,7 @@ class DrawingBoard extends StatefulWidget {
     this.controller,
     this.showDefaultActions = false,
     this.showDefaultTools = false,
+    this.showCustomTools = false,
     this.onPointerDown,
     this.onPointerMove,
     this.onPointerUp,
@@ -63,6 +64,8 @@ class DrawingBoard extends StatefulWidget {
 
   /// 显示默认样式的工具栏
   final bool showDefaultTools;
+
+  final bool showCustomTools;
 
   /// 开始拖动
   final Function(PointerDownEvent pde)? onPointerDown;
@@ -495,7 +498,7 @@ class _DrawingBoardState extends State<DrawingBoard> {
           if (widget.showDefaultTools) buildDefaultTools(_controller, defaultToolsBuilder: widget.defaultToolsBuilder),
         ],
       );
-    } else {
+    } else if (widget.showCustomTools) {
       content = Column(
         children: <Widget>[
           Expanded(child: content),
