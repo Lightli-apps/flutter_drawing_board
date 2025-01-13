@@ -757,7 +757,7 @@ class _DrawingBoardState extends State<DrawingBoard> {
                                         customBorder: RoundedRectangleBorder(
                                           borderRadius: BorderRadius.circular(20),
                                         ),
-                                        child: SizedBox(
+                                        child: Ink(
                                           width: 30,
                                           height: 30,
                                           child: SvgPicture.asset('assets/icons/minus.svg',
@@ -793,7 +793,7 @@ class _DrawingBoardState extends State<DrawingBoard> {
                                         customBorder: RoundedRectangleBorder(
                                           borderRadius: BorderRadius.circular(20),
                                         ),
-                                        child: SizedBox(
+                                        child: Ink(
                                           width: 30,
                                           height: 30,
                                           child: SvgPicture.asset('assets/icons/plus.svg',
